@@ -10,7 +10,6 @@ import android.view.View;
 
 public class CustomDrawableView extends View {
     public static final String TAG = "TBR:CustomDrawableView";
-    private ShapeDrawable mDrawable;
 
     /**
      * First attempt to make a scalable axis display.  Will do proper setup later, but using
@@ -37,9 +36,11 @@ public class CustomDrawableView extends View {
     private double mAlphaY;
     private double mY0;
 
+    private float mLineWidth=10;
+    private int   mLineColor=0xffee00ee;
+    private int   mShapeColor=0xff74AC23;
 
-
-    private Paint mLinePaint;
+    private final Paint mAxisLinePaint;
     private float mFontSize;
 
 
@@ -54,41 +55,42 @@ public class CustomDrawableView extends View {
          * Notice scale is not related to axis values here
          */
 
-        int x = 10;
-        int y = 10;
-        int width = 300;
-        int height = 500;
-
-        mDrawable = new ShapeDrawable(new OvalShape());
-        mDrawable.getPaint().setColor(0xff74AC23);
-        mDrawable.setBounds(x, y, x + width, y + height);
 
 
         // Initialize axis values
         setAxisValues(-50, 25, 25, -30, 5, 5);
 
         // Initialize the graphics style for the axis and tick marks
-        mLinePaint = new Paint();
-        mLinePaint.setColor(0xff0000ee);
-        mLinePaint.setStrokeWidth(5);
+        mAxisLinePaint = new Paint();
+        mAxisLinePaint.setColor(0xff0000ee);
+        mAxisLinePaint.setStrokeWidth(5);
 
         Resources res = getResources();
         mFontSize = res.getDimension(R.dimen.axis_text_size);
-        mLinePaint.setTextSize(mFontSize);
-//        mLinePaint.setTextAlign(Paint.Align.CENTER);
-
+        mAxisLinePaint.setTextSize(mFontSize);
+//        mAxisLinePaint.setTextAlign(Paint.Align.CENTER);
 
     }
 
 
     protected void onDraw(Canvas canvas) {
 
-        // Plot whatever is defined  above in the drawable as well
-        mDrawable.draw(canvas);
 
         // The overlay the axis system
         initializePlotArea(canvas);
+
+        setShapeColor(0x55005555);
+        drawEllipse(canvas, -25, -10, 500, 300);
+
         drawAxisSystem(canvas);
+
+        setLineColor(0xffdd0000);
+        drawLine(canvas, -45, -15, -30, -20);
+        drawLine(canvas, -30, -20, 10, -5);
+        drawLine(canvas, 10, -5, 15, -15);
+        drawLine(canvas, 15, -15, 20, -25);
+
+
     }
 
 
@@ -143,25 +145,62 @@ public class CustomDrawableView extends View {
 
     }
 
+    private void drawEllipse(Canvas canvas, int x0, int y0, int width, int height) {
+        ShapeDrawable drawable = new ShapeDrawable(new OvalShape());
+        drawable.getPaint().setColor(mShapeColor);
+        drawable.setBounds(valueToCanvasX(x0), valueToCanvasY(y0),
+                valueToCanvasX(x0) + width,
+                valueToCanvasY(y0) + height);
+        drawable.draw(canvas);
+    }
+
+    private void drawLine(Canvas canvas, int x0, int y0, int x1, int y1) {
+        Paint functionLinePaint = new Paint();
+        functionLinePaint.setColor(mLineColor);
+        functionLinePaint.setStrokeWidth(mLineWidth);
+        canvas.drawLine(valueToCanvasX(x0), valueToCanvasY(y0), valueToCanvasX(x1), valueToCanvasY(y1), functionLinePaint);
+    }
+
+
+
+    public float getLineWidth() { return mLineWidth; }
+
+    public void setLineWidth(float lineWidth) {
+        mLineWidth = lineWidth;
+    }
+
+    public int getLineColor() { return mLineColor; }
+
+    public void setLineColor(int lineColor) {
+        mLineColor = lineColor;
+    }
+
+    public int getShapeColor() { return mShapeColor; }
+
+    public void setShapeColor(int shapeColor) {
+        mShapeColor = shapeColor;
+    }
+
+
 
     private void drawAxisSystem(Canvas canvas) {
 
         // X-Axis
-        canvas.drawLine(mCanvasMinX, (int)mY0, mCanvasMaxX, (int)mY0 ,mLinePaint);
+        canvas.drawLine(mCanvasMinX, (int)mY0, mCanvasMaxX, (int)mY0 , mAxisLinePaint);
         for (int x = mXmin; x<= mXmax; x+= mDx) {
             int xC= valueToCanvasX(x);
-            canvas.drawLine(xC, (int)(mY0+20), xC, (int)mY0 ,mLinePaint);
+            canvas.drawLine(xC, (int)(mY0+20), xC, (int)mY0 , mAxisLinePaint);
             if (x!=0)
-               drawTextCentered(String.format("%d",x),xC, (int) (mY0+20+mFontSize*.667), mLinePaint, canvas);
+               drawTextCentered(String.format("%d",x),xC, (int) (mY0+20+mFontSize*.667), mAxisLinePaint, canvas);
         }
 
         // Y-Axis
-        canvas.drawLine((int)mX0, mCanvasMinY, (int)mX0, mCanvasMaxY,mLinePaint);
+        canvas.drawLine((int)mX0, mCanvasMinY, (int)mX0, mCanvasMaxY, mAxisLinePaint);
         for (int y = mYmin; y<= mYmax; y+= mDy) {
             int yC= valueToCanvasY(y);
-            canvas.drawLine((int)(mX0-20), yC, (int)mX0, yC ,mLinePaint);
+            canvas.drawLine((int)(mX0-20), yC, (int)mX0, yC , mAxisLinePaint);
             if (y!=0)
-                drawTextRightJustified(String.format("%d",y), (int)(mX0-20-mFontSize/2), yC, mLinePaint, canvas);
+                drawTextRightJustified(String.format("%d",y), (int)(mX0-20-mFontSize/2), yC, mAxisLinePaint, canvas);
         }
     }
 
