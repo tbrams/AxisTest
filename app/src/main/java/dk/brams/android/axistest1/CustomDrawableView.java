@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
+import android.graphics.drawable.shapes.RectShape;
 import android.view.View;
 
 public class CustomDrawableView extends View {
@@ -18,6 +19,8 @@ public class CustomDrawableView extends View {
      *
      * The settings below are the limits on the coordinate system and the step size on each axis.
      */
+
+    private static final int MARGIN=10;
 
     private int mCanvasMinX;
     private int mCanvasMaxX;
@@ -39,7 +42,9 @@ public class CustomDrawableView extends View {
     private float mLineWidth=10;
     private int   mLineColor=0xffee00ee;
     private int   mShapeColor=0xff74AC23;
+    private int   mBarColor=0x77740074;
 
+    private float mBarGapPercentage=10;
     private final Paint mAxisLinePaint;
     private float mFontSize;
 
@@ -58,7 +63,7 @@ public class CustomDrawableView extends View {
 
 
         // Initialize axis values
-        setAxisValues(-50, 25, 25, -30, 5, 5);
+        setAxisValues(-50, 25, 25, -30, 50, 10);
 
         // Initialize the graphics style for the axis and tick marks
         mAxisLinePaint = new Paint();
@@ -90,7 +95,10 @@ public class CustomDrawableView extends View {
         drawLine(canvas, 10, -5, 15, -15);
         drawLine(canvas, 15, -15, 20, -25);
 
+//        drawRectangle(canvas, -25, 10, 20, 20);
 
+        int[] values = {10, 20, 40};
+        drawBarList(canvas, values);
     }
 
 
@@ -125,14 +133,11 @@ public class CustomDrawableView extends View {
         int height= canvas.getHeight();
         int width = canvas.getWidth();
 
-        // Define the canvas coordinate limits so that we leave a margin around the graph
-        int margin = 10;
+        mCanvasMinX = MARGIN;
+        mCanvasMaxX = width-MARGIN-MARGIN;
 
-        mCanvasMinX = margin;
-        mCanvasMaxX = width-margin-margin;
-
-        mCanvasMinY = height-margin-margin;
-        mCanvasMaxY = margin;
+        mCanvasMinY = height-MARGIN-MARGIN;
+        mCanvasMaxY = MARGIN;
 
 
         // Define parameters for converting values to canvas equivalents
@@ -141,7 +146,6 @@ public class CustomDrawableView extends View {
 
         mAlphaY = (double)(mCanvasMaxY-mCanvasMinY)/(mYmax - mYmin);
         mY0 = mCanvasMaxY-mAlphaY* mYmax;
-
 
     }
 
@@ -154,6 +158,18 @@ public class CustomDrawableView extends View {
         drawable.draw(canvas);
     }
 
+
+    private void drawAbsPosRectangle(Canvas canvas, int x0, int y0, int width, int height) {
+        ShapeDrawable bar = new ShapeDrawable(new RectShape());
+        bar.getPaint().setColor(mBarColor);
+        int x1 = valueToCanvasX(x0);
+        int y1 = valueToCanvasY(y0);
+        int x2 = (int)(valueToCanvasX(x0) + width*mAlphaX);
+        int y2 = (int)(valueToCanvasY(y0) + height*mAlphaY);
+        bar.setBounds( x1, (y1<y2?y1:y2) , x2, (y2>y1?y2:y1));
+        bar.draw(canvas);
+    }
+
     private void drawLine(Canvas canvas, int x0, int y0, int x1, int y1) {
         Paint functionLinePaint = new Paint();
         functionLinePaint.setColor(mLineColor);
@@ -161,7 +177,29 @@ public class CustomDrawableView extends View {
         canvas.drawLine(valueToCanvasX(x0), valueToCanvasY(y0), valueToCanvasX(x1), valueToCanvasY(y1), functionLinePaint);
     }
 
+    private void drawBarList(Canvas canvas, int[] sizes) {
+        int x=MARGIN;
+        int y = valueToCanvasY(10);
+        int canvas_width = (mCanvasMaxX-mCanvasMinX);
+        int n= sizes.length;
+        int width = canvas_width/n;
+        int bar_width = (int) (width*(100-mBarGapPercentage)/100);
+        x = x+(int)(width*mBarGapPercentage/100/2);
+        for (int i=0;i<n;i++) {
+            drawCanvasRectangle(canvas, x+(i*width), y, bar_width, (int)(sizes[i]*mAlphaY));
+        }
+    }
 
+    private void drawCanvasRectangle(Canvas canvas, int x0, int y0, int width, int height) {
+        ShapeDrawable bar = new ShapeDrawable(new RectShape());
+        bar.getPaint().setColor(mBarColor);
+        int x1 = x0;
+        int y1 = y0;
+        int x2 = (int)(x0 + width);
+        int y2 = (int)(y0 + height);
+        bar.setBounds( x1, (y1<y2?y1:y2) , x2, (y2>y1?y2:y1));
+        bar.draw(canvas);
+    }
 
     public float getLineWidth() { return mLineWidth; }
 
