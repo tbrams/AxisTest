@@ -3,11 +3,13 @@ package dk.brams.android.axistest1;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Point;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.graphics.drawable.shapes.RectShape;
-import android.util.Log;
 import android.view.View;
 
 public class CustomDrawableView extends View {
@@ -23,11 +25,13 @@ public class CustomDrawableView extends View {
 
     private static final int MARGIN=10;
 
+    // Variables used for canvas dimensions
     private int mCanvasMinX;
     private int mCanvasMaxX;
     private int mCanvasMinY;
     private int mCanvasMaxY;
 
+    // Variables used for axis values
     private int mXmin;
     private int mXmax;
     private int mYmin;
@@ -35,32 +39,25 @@ public class CustomDrawableView extends View {
     private int mDx;
     private int mDy;
 
+    // Variables used for transformation
     private double mAlphaX;
     private double mX0;
     private double mAlphaY;
     private double mY0;
 
+    // various settings for graphics
     private float mLineWidth=10;
     private int   mLineColor=0xffee00ee;
     private int   mShapeColor=0xff74AC23;
-    private int   mBarColor=0x77740074;
 
+    private int   mBarColor=0x77740074;
     private float mBarGapPercentage=10;
+
     private final Paint mAxisLinePaint;
     private float mFontSize;
 
-
     public CustomDrawableView(Context context) {
         super(context);
-
-
-        /**
-         * This is a drawable with an ellipse...
-         * Just to have something to plot besides axis system.
-         *
-         * Notice scale is not related to axis values here
-         */
-
 
 
         // Initialize axis values
@@ -71,6 +68,7 @@ public class CustomDrawableView extends View {
         mAxisLinePaint.setColor(0xff0000ee);
         mAxisLinePaint.setStrokeWidth(5);
 
+        // Set the font size for the axis values
         Resources res = getResources();
         mFontSize = res.getDimension(R.dimen.axis_text_size);
         mAxisLinePaint.setTextSize(mFontSize);
@@ -78,7 +76,8 @@ public class CustomDrawableView extends View {
 
     }
 
-    /* Handle initialization of scaling parameters here, when the layout size is known
+    /*
+     * Handle initialization of scaling parameters here, when the layout size is known
      */
     @Override
     protected void onSizeChanged(int width, int height, int oldw, int oldh) {
@@ -102,19 +101,24 @@ public class CustomDrawableView extends View {
 
     protected void onDraw(Canvas canvas) {
 
+        // draw an ellipse
         setShapeColor(0x55005555);
         drawEllipse(canvas, -25, -10, 500, 300);
 
+        // Draw axis system
         drawAxisSystem(canvas);
 
-        setLineColor(0xffdd0000);
-        drawLine(canvas, -45, -15, -30, -20);
-        drawLine(canvas, -30, -20, 10, -5);
-        drawLine(canvas, 10, -5, 15, -15);
-        drawLine(canvas, 15, -15, 20, -25);
+        // Draw polyline
+        Point[] myPoints = {
+                new Point(-45, -15),
+                new Point(-30, -20),
+                new Point(10, -5),
+                new Point(15, -15),
+                new Point(20, -25)
+        };
+        drawPolyLine(canvas, myPoints);
 
-//        drawRectangle(canvas, -25, 10, 20, 20);
-
+        // Draw bar chart
         int[] values = {10, 20, 40};
         drawBarList(canvas, values);
     }
@@ -188,11 +192,26 @@ public class CustomDrawableView extends View {
         bar.draw(canvas);
     }
 
-    private void drawLine(Canvas canvas, int x0, int y0, int x1, int y1) {
+    private void drawLineSegment(Canvas canvas, int x0, int y0, int x1, int y1) {
         Paint functionLinePaint = new Paint();
         functionLinePaint.setColor(mLineColor);
         functionLinePaint.setStrokeWidth(mLineWidth);
         canvas.drawLine(valueToCanvasX(x0), valueToCanvasY(y0), valueToCanvasX(x1), valueToCanvasY(y1), functionLinePaint);
+    }
+
+    private void drawPolyLine(Canvas canvas, Point[] points) {
+        Paint polyLinePaint = new Paint();
+        polyLinePaint.setColor(Color.RED);
+        polyLinePaint.setStrokeWidth(8);
+        polyLinePaint.setStyle(Paint.Style.STROKE);
+
+        Path polyLinePath = new Path();
+        polyLinePath.moveTo(valueToCanvasX(points[0].x), valueToCanvasY(points[0].y));
+        for (int i = 1; i < points.length; i++) {
+            polyLinePath.lineTo(valueToCanvasX(points[i].x), valueToCanvasY(points[i].y));
+        }
+        canvas.drawPath(polyLinePath, polyLinePaint);
+
     }
 
     private void drawBarList(Canvas canvas, int[] sizes) {
@@ -264,7 +283,7 @@ public class CustomDrawableView extends View {
     /**
      * Map real Y value to canvas value.
      *
-     * @param y value from setup
+     * @param y value
      * @return equivalent canvas y value
      */
     private int valueToCanvasY(int y) {
@@ -276,14 +295,10 @@ public class CustomDrawableView extends View {
     /**
      * Map real X value to canvas value.
      *
-     * @param x value from setup
+     * @param x value
      * @return equivalent canvas x value
      */
-    private int valueToCanvasX(int x) {
-
-        return (int)(mAlphaX*x+mX0);
-    }
-
+    private int valueToCanvasX(int x) { return (int)(mAlphaX*x+mX0); }
 
 
     private void drawTextCentered(String text, int x, int y, Paint paint, Canvas canvas) {
