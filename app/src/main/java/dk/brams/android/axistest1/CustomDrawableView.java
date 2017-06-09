@@ -116,7 +116,16 @@ public class CustomDrawableView extends View {
                 new Point(15, -15),
                 new Point(20, -25)
         };
-        drawPolyLine(canvas, myPoints);
+        drawPolyLine(canvas, myPoints, Color.RED);
+
+
+        // Draw polygon
+        Point[] myPolygon = {
+                new Point(-45, 45),
+                new Point(-20, 20),
+                new Point(-5, 45)
+        };
+        drawPolygon(canvas, myPolygon, Color.GREEN);
 
         // Draw bar chart
         int[] values = {10, 20, 40};
@@ -199,9 +208,9 @@ public class CustomDrawableView extends View {
         canvas.drawLine(valueToCanvasX(x0), valueToCanvasY(y0), valueToCanvasX(x1), valueToCanvasY(y1), functionLinePaint);
     }
 
-    private void drawPolyLine(Canvas canvas, Point[] points) {
+    private void drawPolyLine(Canvas canvas, Point[] points, int color) {
         Paint polyLinePaint = new Paint();
-        polyLinePaint.setColor(Color.RED);
+        polyLinePaint.setColor(color);
         polyLinePaint.setStrokeWidth(8);
         polyLinePaint.setStyle(Paint.Style.STROKE);
 
@@ -213,6 +222,24 @@ public class CustomDrawableView extends View {
         canvas.drawPath(polyLinePath, polyLinePaint);
 
     }
+
+    private void drawPolygon(Canvas canvas, Point[] points, int color) {
+        Paint polyPaint = new Paint();
+        polyPaint.setColor(color);
+        polyPaint.setStyle(Paint.Style.FILL);
+
+        Path polygonPath = new Path();
+        polygonPath.moveTo(valueToCanvasX(points[0].x), valueToCanvasY(points[0].y));
+        for (int i = 1; i < points.length; i++) {
+            polygonPath.lineTo(valueToCanvasX(points[i].x), valueToCanvasY(points[i].y));
+        }
+        polygonPath.close();
+
+        canvas.drawPath(polygonPath, polyPaint);
+    }
+
+
+
 
     private void drawBarList(Canvas canvas, int[] sizes) {
         int x=MARGIN;
