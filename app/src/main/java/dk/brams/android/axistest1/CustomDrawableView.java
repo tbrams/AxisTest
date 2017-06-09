@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.graphics.drawable.shapes.RectShape;
+import android.util.Log;
 import android.view.View;
 
 public class CustomDrawableView extends View {
@@ -77,12 +78,29 @@ public class CustomDrawableView extends View {
 
     }
 
+    /* Handle initialization of scaling parameters here, when the layout size is known
+     */
+    @Override
+    protected void onSizeChanged(int width, int height, int oldw, int oldh) {
+        super.onSizeChanged(width, height, oldw, oldh);
+
+        mCanvasMinX = MARGIN;
+        mCanvasMaxX = width-MARGIN-MARGIN;
+
+        mCanvasMinY = height-MARGIN-MARGIN;
+        mCanvasMaxY = MARGIN;
+
+
+        // Define parameters for converting values to canvas equivalents
+        mAlphaX = (mCanvasMaxX-mCanvasMinX)/(mXmax - mXmin);
+        mX0 = mCanvasMaxX-mAlphaX* mXmax;
+
+        mAlphaY = (double)(mCanvasMaxY-mCanvasMinY)/(mYmax - mYmin);
+        mY0 = mCanvasMaxY-mAlphaY* mYmax;
+
+    }
 
     protected void onDraw(Canvas canvas) {
-
-
-        // The overlay the axis system
-        initializePlotArea(canvas);
 
         setShapeColor(0x55005555);
         drawEllipse(canvas, -25, -10, 500, 300);
