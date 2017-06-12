@@ -90,7 +90,7 @@ public class CustomDrawableView extends View {
         mCanvasMaxY = MARGIN;
 
 
-        // Define parameters for converting values to canvas equivalents
+        // Define parameters for mapping real world values to canvas equivalents.
         mAlphaX = (mCanvasMaxX-mCanvasMinX)/(mXmax - mXmin);
         mX0 = mCanvasMaxX-mAlphaX* mXmax;
 
@@ -98,6 +98,8 @@ public class CustomDrawableView extends View {
         mY0 = mCanvasMaxY-mAlphaY* mYmax;
 
     }
+
+
 
     protected void onDraw(Canvas canvas) {
 
@@ -153,32 +155,6 @@ public class CustomDrawableView extends View {
         mDy = dy;
     }
 
-
-    /**
-     * Will initialize the canvas parameters based on canvas size.
-     *
-     * @param canvas
-     */
-    private void initializePlotArea(Canvas canvas) {
-
-        int height= canvas.getHeight();
-        int width = canvas.getWidth();
-
-        mCanvasMinX = MARGIN;
-        mCanvasMaxX = width-MARGIN-MARGIN;
-
-        mCanvasMinY = height-MARGIN-MARGIN;
-        mCanvasMaxY = MARGIN;
-
-
-        // Define parameters for converting values to canvas equivalents
-        mAlphaX = (mCanvasMaxX-mCanvasMinX)/(mXmax - mXmin);
-        mX0 = mCanvasMaxX-mAlphaX* mXmax;
-
-        mAlphaY = (double)(mCanvasMaxY-mCanvasMinY)/(mYmax - mYmin);
-        mY0 = mCanvasMaxY-mAlphaY* mYmax;
-
-    }
 
     private void drawEllipse(Canvas canvas, int x0, int y0, int width, int height) {
         ShapeDrawable drawable = new ShapeDrawable(new OvalShape());
