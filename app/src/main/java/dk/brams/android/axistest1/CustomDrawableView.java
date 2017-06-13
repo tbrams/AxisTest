@@ -87,7 +87,7 @@ public class CustomDrawableView extends View {
     }
 
     private void axis_settings_2() {
-        setAxisValues(-1.5f,1.5f, .5f, .1f, -1.5f, 1.5f, .5f, .1f);
+        setAxisValues(-1.5f,1.5f, .5f, .1f, -2.0f, 2.0f, .5f, .1f);
     }
 
     /*
@@ -103,12 +103,12 @@ public class CustomDrawableView extends View {
         mCanvasMinY = height-MARGIN-MARGIN;
         mCanvasMaxY = MARGIN;
 
-
         // Define parameters for mapping real world values to canvas equivalents.
         mAlphaX = (mCanvasMaxX-mCanvasMinX)/(mXmax - mXmin);
-        mX0 = mCanvasMaxX-mAlphaX* mXmax;
+        mAlphaY = (mCanvasMaxY-mCanvasMinY)/(mYmax - mYmin);
 
-        mAlphaY = (float)(mCanvasMaxY-mCanvasMinY)/(mYmax - mYmin);
+
+        mX0 = mCanvasMaxX-mAlphaX* mXmax;
         mY0 = mCanvasMaxY-mAlphaY* mYmax;
 
     }
