@@ -42,6 +42,8 @@ public class CustomDrawableView extends View {
     private float mYmax;
     private float mDx;
     private float mDy;
+    private float mDxm;
+    private float mDym;
 
     // Variables used for transformation
     private float mAlphaX;
@@ -85,7 +87,7 @@ public class CustomDrawableView extends View {
     }
 
     private void axis_settings_2() {
-        setAxisValues(-1.5f,1.5f, .25f, -1.5f, 1.5f, .25f);
+        setAxisValues(-1.5f,1.5f, .5f, .1f, -1.5f, 1.5f, .5f, .1f);
     }
 
     /*
@@ -169,10 +171,10 @@ public class CustomDrawableView extends View {
      *
      * @param xMin lowest x value on chart
      * @param xMax  highest x value on chart
-     * @param dx    distance between x tickmarks
+     * @param dx    distance between x labels
      * @param yMin  lowest y value on chart
      * @param yMax  highest y value on chart
-     * @param dy    distance between y tickmarks
+     * @param dy    distance between y labels
      */
     private void setAxisValues(float xMin, float xMax, float dx, float yMin, float yMax, float dy){
         mXmin = xMin;
@@ -181,6 +183,32 @@ public class CustomDrawableView extends View {
         mYmin = yMin;
         mYmax = yMax;
         mDy = dy;
+
+        mDxm=mDx;
+        mDym=mDy;
+    }
+
+    /**
+     * Initialize the scale of the graph in both dimensions with minor tickmarks
+     *
+     * @param xMin lowest x value on chart
+     * @param xMax  highest x value on chart
+     * @param dx    distance between x labels
+     * @param dxm    distance between x tickmarks
+     * @param yMin  lowest y value on chart
+     * @param yMax  highest y value on chart
+     * @param dy    distance between y labels
+     * @param dym    distance between y tickmarks
+     */
+    private void setAxisValues(float xMin, float xMax, float dx, float dxm, float yMin, float yMax, float dy, float dym){
+        mXmin = xMin;
+        mXmax = xMax;
+        mDx = dx;
+        mDxm= dxm;
+        mYmin = yMin;
+        mYmax = yMax;
+        mDy = dy;
+        mDym=dym;
     }
 
 
@@ -309,6 +337,10 @@ public class CustomDrawableView extends View {
 
         // X-Axis
         canvas.drawLine(mCanvasMinX, (int)mY0, mCanvasMaxX, (int)mY0 , mAxisLinePaint);
+        for (float x = mXmin; x<= mXmax; x+= mDxm) {
+            int xC= valueToCanvasX(x);
+            canvas.drawLine((int)xC, (int)(mY0+7), xC, (int)mY0 , mAxisLinePaint);
+        }
         for (float x = mXmin; x<= mXmax; x+= mDx) {
             int xC= valueToCanvasX(x);
             canvas.drawLine((int)xC, (int)(mY0+20), xC, (int)mY0 , mAxisLinePaint);
@@ -318,6 +350,10 @@ public class CustomDrawableView extends View {
 
         // Y-Axis
         canvas.drawLine((int)mX0, mCanvasMinY, (int)mX0, mCanvasMaxY, mAxisLinePaint);
+        for (float y = mYmin; y<= mYmax; y+= mDym) {
+            int yC= valueToCanvasY(y);
+            canvas.drawLine((int)(mX0-7), yC, (int)mX0, yC , mAxisLinePaint);
+        }
         for (float y = mYmin; y<= mYmax; y+= mDy) {
             int yC= valueToCanvasY(y);
             canvas.drawLine((int)(mX0-20), yC, (int)mX0, yC , mAxisLinePaint);
