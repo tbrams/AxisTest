@@ -85,7 +85,7 @@ public class CustomDrawableView extends View {
     }
 
     private void axis_settings_2() {
-        setAxisValues(-.5f,(float)Math.PI*2, 1, -1.5f, 1.5f, .25f);
+        setAxisValues(-1.5f,1.5f, .25f, -1.5f, 1.5f, .25f);
     }
 
     /*
@@ -150,12 +150,13 @@ public class CustomDrawableView extends View {
 
 
     private void application_2(Canvas canvas) {
-        // Make a sinus curve with 50 points
+        // Make a nice parametric plot of a Lissajous curve
         ArrayList myPointArr = new ArrayList();
-        int nPoints=50;
-        for (int i=0;i<=nPoints;i++){
-            float x=(float)(2*Math.PI/nPoints*i);
-            myPointArr.add(new PointF(x, (float)Math.sin(x)));
+        double dt=0.02;
+        for (double t=0;t<=(2*Math.PI+dt);t+=dt){
+            float x=(float)(Math.cos(3*t));
+            float y=(float)(Math.sin(2*t));
+            myPointArr.add(new PointF(x, y));
         }
 
         drawPolyLine(canvas, myPointArr, Color.RED);
