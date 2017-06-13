@@ -1,8 +1,8 @@
 # AxisTest
-First attempt to create a scalable axis setup taking advantage of the available canvas.
+Scalable axis setup taking advantage of the available canvas.
 
 <p align="center">
-<img width="745" alt="screenshot 2017-06-11" src="https://user-images.githubusercontent.com/3058746/27064929-19beda22-5024-11e7-9169-85bdca6e37a0.png>
+<img width="300" alt="screenshot 2017-06-11" src="https://user-images.githubusercontent.com/3058746/27064929-19beda22-5024-11e7-9169-85bdca6e37a0.png">
 </p>
 
 ## Work in progress
