@@ -11,6 +11,9 @@ import android.graphics.PointF;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
 import android.graphics.drawable.shapes.RectShape;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.MotionEvent;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -28,6 +31,7 @@ public class CustomDrawableView extends View {
      */
 
     private static final int MARGIN=10;
+    private final Paint mAnnotationPaint;
 
     // Variables used for canvas dimensions
     private int mCanvasMinX;
@@ -62,6 +66,8 @@ public class CustomDrawableView extends View {
     private final Paint mAxisLinePaint;
     private float mFontSize;
 
+    private ArrayList<Annotation> mMarkerList = new ArrayList();
+
     public CustomDrawableView(Context context) {
         super(context);
 
@@ -79,6 +85,10 @@ public class CustomDrawableView extends View {
         mFontSize = res.getDimension(R.dimen.axis_text_size);
         mAxisLinePaint.setTextSize(mFontSize);
 //        mAxisLinePaint.setTextAlign(Paint.Align.CENTER);
+
+        // Prepare paint for annotations
+        mAnnotationPaint = new Paint();
+        mAnnotationPaint.setColor(0xffee0000);
 
     }
 
@@ -152,6 +162,21 @@ public class CustomDrawableView extends View {
 
 
     private void application_2(Canvas canvas) {
+
+        // Draw polygon
+        PointF[] myPolygon = {
+                new PointF(0.1f, 0.1f),
+                new PointF(0.1f, 1.1f),
+                new PointF(0.3f, 1.5f),
+                new PointF(1.1f, 1.5f),
+                new PointF(1.1f, 0.1f)
+        };
+        drawPolygon(canvas, myPolygon, Color.GREEN);
+
+        // Annotation
+        drawAnnotation(canvas, .8f, .95f, 10f);
+
+
         // Make a nice parametric plot of a Lissajous curve
         ArrayList myPointArr = new ArrayList();
         double dt=0.02;
@@ -164,6 +189,19 @@ public class CustomDrawableView extends View {
         drawPolyLine(canvas, myPointArr, Color.RED);
 
 
+    }
+
+    private void drawAnnotation(Canvas canvas, float x, float y, float radius) {
+
+        // Create an object to store away the annotation point
+        Annotation annotation = new Annotation(
+                new PointF(valueToCanvasX(x),valueToCanvasY(y)),
+                convertDpToPixel(getContext(), radius)
+        );
+        mMarkerList.add(annotation);
+
+        // Draw the annotation
+        canvas.drawCircle(annotation.position.x, annotation.position.y, annotation.radius, mAnnotationPaint);
     }
 
     /**
@@ -274,6 +312,22 @@ public class CustomDrawableView extends View {
         private void drawPolygon(Canvas canvas, Point[] points, int color) {
         Paint polyPaint = new Paint();
         polyPaint.setColor(color);
+        polyPaint.setStyle(Paint.Style.FILL);
+
+        Path polygonPath = new Path();
+        polygonPath.moveTo(valueToCanvasX(points[0].x), valueToCanvasY(points[0].y));
+        for (int i = 1; i < points.length; i++) {
+            polygonPath.lineTo(valueToCanvasX(points[i].x), valueToCanvasY(points[i].y));
+        }
+        polygonPath.close();
+
+        canvas.drawPath(polygonPath, polyPaint);
+    }
+
+    private void drawPolygon(Canvas canvas, PointF[] points, int color) {
+        Paint polyPaint = new Paint();
+        polyPaint.setColor(color);
+        polyPaint.setAlpha(50);
         polyPaint.setStyle(Paint.Style.FILL);
 
         Path polygonPath = new Path();
@@ -401,4 +455,65 @@ public class CustomDrawableView extends View {
         canvas.drawText(text, xPos, yPos, paint);
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        float pointX = event.getX();
+        float pointY = event.getY();
+        // Checks for the event that occurs
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+
+                // Test if the click is on an annotation, and if there are anything to show at this point
+                Log.d(TAG, String.format(Locale.ENGLISH, "onTouchEvent: on (%f, %f)", pointX, pointY));
+                for (Annotation a : mMarkerList) {
+                    if (Math.hypot(pointX-a.position.x, pointY-a.position.y)<=a.radius){
+                        Log.d(TAG, "onTouchEvent: We got a hit on the annotation");
+                    }
+                };
+                return true;
+            case MotionEvent.ACTION_MOVE:
+//                path.lineTo(pointX, pointY);
+                break;
+            default:
+                return false;
+        }
+        // Force a view to draw again
+        postInvalidate();
+        return true;
+    }
+
+    /**
+     * Convert dp to pixels.
+     *
+     * @param context [Context]
+     * @param dp [float] Size in dp
+     * @return   [float] equivalent size in pixels on screen
+     */
+    public static float convertDpToPixel(Context context, float dp){
+        Resources r = context.getResources();
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics());
+    }
+
+    /**
+     * Convert pixels to dp.
+     *
+     * @param context [Context]
+     * @param px [float] Size in pixels
+     * @return   [float] equivalent size in device independent pixels
+     */
+    public static float convertPixelsToDp(Context context, float px){
+        Resources r = context.getResources();
+        float dp = px / (r.getDisplayMetrics().densityDpi / 160f);
+        return dp;
+    }
+
+    public class Annotation {
+        private float radius;
+        private PointF position;
+
+        public Annotation(PointF pos, float rad) {
+            radius=rad;
+            position=pos;
+        }
+    }
 }
